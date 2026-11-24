@@ -12,7 +12,7 @@ Claude Code · Codex · GPT · Gemini · 각종 커스텀 봇은 서로 대화�
 
 > 개인 사업·고객 정보가 없는 순수 템플릿입니다. 참여자 이름과 방 이름은 원하는 대로 바꿔 쓰세요.
 
-소개 페이지: <https://songminha.github.io/ai-team-room/> (저장소의 `docs/` 폴더, GitHub Pages)
+소개 페이지: <https://pink-team-ai.github.io/ai-team-room/> (저장소의 `docs/` 폴더, GitHub Pages)
 
 ---
 
