@@ -30,6 +30,16 @@ function canonical(sender) {
   return String(sender == null ? '' : sender).trim();
 }
 
+// 기본 방 — 첫 요청 때 D1 에 자동으로 들어간다(insert or ignore).
+const DEFAULT_ROOMS = [
+  { slug: 'general', name: '종합', description: '모두 함께 이야기하는 기본 방', position: 1 },
+  { slug: 'dev', name: '개발', description: '코드·API·자동화 개발 논의', position: 2 },
+  { slug: 'marketing', name: '마케팅', description: '콘텐츠·카피·캠페인', position: 3 },
+  { slug: 'ops', name: '운영', description: '운영·모니터링·정산', position: 4 },
+];
+
+const ROOM_SLUGS = DEFAULT_ROOMS.map((r) => r.slug).join(', ');
+
 const PALETTE = ['#ff5c8a', '#6fc3ff', '#f0b070', '#a78bfa', '#5ed6a8', '#ffd166', '#ff8b6b', '#8fb8ff'];
 
 const CORS = {
@@ -272,7 +282,32 @@ async function attachReplies(env, messages, slug) {
   return messages;
 }
 
+const roomsReady = new WeakMap();
+
+// 기본 방이 D1 에 없으면 넣는다(있으면 그대로). 한 isolate 당 한 번만 시도한다.
+function ensureRooms(env) {
+  if (!env || !env.DB) return Promise.resolve(false);
+  if (roomsReady.has(env)) return roomsReady.get(env);
+  const p = (async () => {
+    for (const r of DEFAULT_ROOMS) {
+      try {
+        await env.DB.prepare(
+          'insert or ignore into rooms (slug, name, description, position) values (?, ?, ?, ?)'
+        )
+          .bind(r.slug, r.name, r.description, r.position)
+          .run();
+      } catch (e) {
+        /* 권한/일시 오류 — 이미 있는 방으로 계속 동작한다 */
+      }
+    }
+    return true;
+  })();
+  roomsReady.set(env, p);
+  return p;
+}
+
 async function roomList(env) {
+  await ensureRooms(env);
   const res = await env.DB.prepare(
     `select r.slug, r.name, r.description, r.position,
             (select count(*) from messages m where m.room_slug = r.slug) as message_count,
@@ -285,6 +320,7 @@ async function roomList(env) {
 }
 
 async function getRoom(env, slug) {
+  await ensureRooms(env);
   return env.DB.prepare('select slug, name, description from rooms where slug = ?').bind(slug).first();
 }
 
@@ -551,7 +587,7 @@ async function mcpCall(env, name, args, principal) {
   const room = String((args && args.room) || 'general').trim() || 'general';
   const found = await getRoom(env, room);
   if (!found) {
-    return { content: [{ type: 'text', text: `방 '${room}' 이 없습니다. 사용 가능한 방은 /api/rooms 에서 확인하세요.` }], isError: true };
+    return { content: [{ type: 'text', text: `방 '${room}' 이 없습니다. 사용 가능한 방: ${ROOM_SLUGS}` }], isError: true };
   }
   if (name === 'read_room_messages') {
     const after = Math.max(0, parseInt((args && args.after) || 0, 10) || 0);
@@ -809,7 +845,7 @@ async function handleApi(request, env, url) {
         base_url: url.origin,
         api_key: env.API_KEY,
         auth: 'Authorization: Bearer <API_KEY 또는 개인 토큰> (또는 X-Room-Key)',
-        rooms: ['general', 'dev', 'marketing', 'ops'],
+        rooms: DEFAULT_ROOMS.map((r) => r.slug),
         agents: Object.keys(AGENTS).map((name) => agentMeta(name)),
         endpoints: [
           { method: 'GET', path: '/api/rooms', note: '방 목록' },
