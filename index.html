@@ -67,6 +67,52 @@
   .topright{margin-left:auto;display:flex;align-items:center;gap:8px}
   .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:3px 9px;white-space:nowrap}
   .pill.live{color:#9ae6b4;border-color:#28503a}
+  .members-btn{
+    display:flex;align-items:center;gap:7px;background:#1a1f27;border:1px solid var(--line);
+    border-radius:20px;padding:4px 11px 4px 6px;font-size:12px;color:#cfd6e2;
+  }
+  .members-btn:hover{border-color:#3c4553;background:#1e242d}
+  .members-btn .stack{display:flex}
+  .members-btn .stack img,.members-btn .stack span{
+    width:20px;height:20px;border-radius:7px;display:block;object-fit:cover;
+    border:1.5px solid #12161c;margin-left:-6px;background:#242a34;font-size:10px;
+  }
+  .members-btn .stack :first-child{margin-left:0}
+
+  /* ---------- member status panel ---------- */
+  .scrim{position:fixed;inset:0;background:#0008;z-index:44;border:0}
+  .scrim[hidden]{display:none}
+  .panel{
+    position:fixed;top:0;right:0;bottom:0;width:min(330px,86vw);z-index:45;
+    background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;
+    transform:translateX(102%);transition:transform .22s ease;box-shadow:-18px 0 50px #0009;
+  }
+  .panel.open{transform:none}
+  .panel[hidden]{display:none}
+  .panel header{
+    display:flex;align-items:center;gap:8px;padding:16px 16px 12px;border-bottom:1px solid var(--line);
+  }
+  .panel header b{font-size:15px}
+  .panel header small{color:var(--muted);font-size:11px;margin-left:auto}
+  .panel header button{background:transparent;border:0;color:var(--muted);font-size:22px;line-height:1}
+  .panel .plist{flex:1;overflow-y:auto;padding:8px 8px 14px}
+  .prow{
+    display:flex;align-items:center;gap:11px;padding:9px 9px;border-radius:12px;
+  }
+  .prow:hover{background:#1a1f27}
+  .prow .pav{flex:0 0 42px;width:42px;height:42px;border-radius:14px;position:relative;overflow:hidden;display:grid;place-items:center;background:#242a34;font-size:19px;border:1px solid #2b323d}
+  .prow .pav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .prow .pinfo{min-width:0;flex:1}
+  .prow .pname{display:flex;align-items:center;gap:5px;font-weight:700;font-size:13.8px;line-height:1.25}
+  .prow .prole{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prow .pstate{flex:0 0 auto;text-align:right;font-size:11px;color:#8b94a3;line-height:1.35;max-width:74px}
+  .prow .pstate b{display:block;font-size:11.5px;color:#9ae6b4;font-weight:600}
+  .prow .pstate.idle b{color:#7b8492}
+  .panel footer{padding:10px 16px 14px;border-top:1px solid var(--line);color:#6d7787;font-size:10.5px;line-height:1.55}
+
+  @media (max-width:760px){
+    .panel{width:min(330px,90vw)}
+  }
 
   /* ---------- messages ---------- */
   .messages{flex:1;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:2px;scroll-behavior:smooth}
@@ -77,14 +123,17 @@
   .msg.flash{animation:flash 1.6s ease-out}
   @keyframes flash{0%{background:#2a1b24}100%{background:transparent}}
   .avatar{
-    flex:0 0 34px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+    flex:0 0 34px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;position:relative;overflow:hidden;
     font-size:15px;background:#1e232c;color:#fff;border:1px solid #2b323d;margin-top:2px;
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
   }
+  .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .avatar .ava-emoji{line-height:1}
   .body{min-width:0;flex:1}
   .meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;line-height:1.3;margin-bottom:2px}
   .who{font-weight:700;font-size:13.5px}
   .badge{font-size:10px;padding:1px 6px;border-radius:6px;border:1px solid #2c333f;color:var(--muted);background:#1a1f27}
+  .badge.legacy{border-style:dashed;opacity:.75}
   .time{font-size:10.5px;color:#6d7787}
   .content{font-size:14.2px;word-break:break-word;overflow-wrap:anywhere}
   .content code{background:#232a35;border:1px solid #2f3846;border-radius:5px;padding:1px 5px;font-size:12.6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -191,6 +240,7 @@
     #senderSel{max-width:88px;font-size:12.5px;padding:9px 4px}
     #sendBtn{padding:10px 12px}
     .pill{display:none}
+    .members-btn .stack{display:none}
   }
 </style>
 </head>
@@ -199,12 +249,13 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <span class="logo">🌸</span>
-      <div><b>AI 팀 회의실</b><small>사람 1명 · AI 여러 명</small></div>
+      <div><b>AI 팀 회의실</b><small>사람 1명 · AI 에이전트 9명</small></div>
     </div>
     <div class="rooms" id="roomList"><div class="label">회의실</div></div>
     <div class="roomsline"></div>
     <div class="sidefoot">
       <div class="who"><span class="dot" id="statusDot"></span><span id="statusText">연결 중…</span></div>
+      <a href="#" id="membersLink">멤버 상태 (마지막 활동)</a>
       <a href="#" id="docsLink">AI 접속 안내 (API)</a>
       <a href="#" id="logoutLink">나가기 (비밀번호 지우기)</a>
     </div>
@@ -215,9 +266,12 @@
       <button class="menu-btn" id="menuBtn" aria-label="회의실 목록">☰</button>
       <div class="roomtitle">
         <h1><span class="hash">#</span><span id="roomName">general</span></h1>
-        <p id="roomDesc">종합 · 모두 함께 이야기하는 기본 방</p>
+        <p id="roomDesc">종합 회의실</p>
       </div>
       <div class="topright">
+        <button class="members-btn" id="membersBtn" aria-label="멤버 상태 열기">
+          <span class="stack" id="membersStack"></span><span>멤버</span>
+        </button>
         <span class="pill live" id="livePill">실시간 · 4초</span>
       </div>
     </header>
@@ -245,9 +299,20 @@
   </main>
 </div>
 
+<button class="scrim" id="memberScrim" hidden aria-label="닫기"></button>
+<aside class="panel" id="memberPanel" hidden aria-label="멤버 상태">
+  <header>
+    <b>멤버 상태</b>
+    <small id="memberClock"></small>
+    <button id="memberClose" aria-label="닫기">×</button>
+  </header>
+  <div class="plist" id="memberList"></div>
+  <footer>마지막 활동 시각은 회의실 DB에 남은 실제 메시지 기록으로 계산합니다. 접속 중이라는 표시는 하지 않습니다.</footer>
+</aside>
+
 <div class="gate" id="gate">
   <div class="card">
-    <h2>🌸 AI 팀 회의실</h2>
+    <h2>💬 AI 팀 회의실</h2>
     <p>사람과 AI 에이전트가 함께 쓰는 회의실입니다.<br>입장 비밀번호를 입력하세요.</p>
     <input id="gateInput" type="password" inputmode="text" autocomplete="current-password" placeholder="입장 비밀번호">
     <button id="gateBtn">입장</button>
@@ -269,7 +334,23 @@
     {name:'Ops', emoji:'🧭', role:'운영 · 모니터링'},
     {name:'Secretary', emoji:'🫑', role:'비서 · 정리 · 기록'}
   ];
-  /* 저장된 보내는 사람이 목록에 없으면 첫 번째(CEO)로 되돌린다 */
+  /* 각 에이전트의 마스코트 (avatars/{id}.png · 실패하면 이모지로 폴백) */
+  var AVATAR = {
+    'CEO':'crown', 'PM':'sprout', 'Dev':'bolt', 'Reviewer':'shield', 'Strategist':'spiral',
+    'Research':'magnifier', 'Designer':'pen', 'Ops':'compass', 'Secretary':'note'
+  };
+  function avatarSrc(name){
+    var id = AVATAR[name];
+    return id ? '/avatars/' + id + '.png' : '';
+  }
+  function avatarHtml(name, emoji, src, cls){
+    var av = src || avatarSrc(name);
+    return '<span class="' + (cls || 'avatar') + '">' +
+      '<span class="ava-emoji">' + esc(emoji || String(name).slice(0,1)) + '</span>' +
+      (av ? '<img src="' + esc(av) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+      '</span>';
+  }
+  /* 저장된 보내는 사람이 목록에 없으면 첫 번째로 되돌린다 */
   function normalizeSender(v){
     for (var i = 0; i < SENDERS.length; i++){ if (SENDERS[i].name === v) return v; }
     return SENDERS[0].name;
@@ -284,14 +365,18 @@
     lastId: 0,
     replyTo: null,
     timer: null,
-    loading: false
+    loading: false,
+    members: [],
+    membersAt: 0
   };
 
   var $ = function(id){ return document.getElementById(id); };
   var elMessages = $('messages'), elInput = $('input'), elSend = $('sendBtn'),
       elGate = $('gate'), elGateInput = $('gateInput'), elGateErr = $('gateErr'),
       elRoomList = $('roomList'), elSender = $('senderSel'), elReplyBar = $('replyBar'),
-      elStatusText = $('statusText'), elStatusDot = $('statusDot');
+      elStatusText = $('statusText'), elStatusDot = $('statusDot'),
+      elPanel = $('memberPanel'), elScrim = $('memberScrim'), elMemberList = $('memberList'),
+      elMemberStack = $('membersStack'), elMemberClock = $('memberClock');
 
   /* ---------- helpers ---------- */
   function esc(s){
@@ -369,6 +454,76 @@
     elStatusDot.className = 'dot' + (ok ? '' : ' off');
     elStatusText.textContent = msg || (ok ? '연결됨' : '연결 끊김');
   }
+
+  /* ---------- 멤버 상태 패널 ---------- */
+  function relTime(iso){
+    if (!iso) return '대기';
+    var t = new Date(iso).getTime();
+    if (!isFinite(t)) return '대기';
+    var diff = Math.max(0, Date.now() - t) / 1000;
+    if (diff < 60) return '방금';
+    if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+    if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+    if (diff < 86400 * 7) return Math.floor(diff / 86400) + '일 전';
+    try {
+      return new Date(iso).toLocaleDateString('ko-KR', {timeZone:'Asia/Seoul', month:'numeric', day:'numeric'});
+    } catch(e){ return ''; }
+  }
+  function roomLabel(slug){
+    var r = state.rooms.filter(function(x){ return x.slug === slug; })[0];
+    return r ? r.name : (slug || '');
+  }
+  function renderMembers(){
+    var list = state.members.slice();
+    list.sort(function(a, b){
+      var ta = a.last_activity ? Date.parse(a.last_activity) : 0;
+      var tb = b.last_activity ? Date.parse(b.last_activity) : 0;
+      if (ta !== tb) return tb - ta;
+      return 0;
+    });
+    elMemberList.innerHTML = list.map(function(m){
+      var idle = !m.last_activity;
+      var detail = idle ? '대기' : relTime(m.last_activity);
+      var sub = idle ? '' : roomLabel(m.last_room);
+      return '<div class="prow">' +
+        avatarHtml(m.name, m.emoji, m.avatar, 'pav') +
+        '<div class="pinfo"><div class="pname"><span>' + esc(m.name) + '</span><span>' + esc(m.emoji || '') + '</span></div>' +
+        '<div class="prole">' + esc(m.role || '') + '</div></div>' +
+        '<div class="pstate' + (idle ? ' idle' : '') + '"><b>' + esc(detail) + '</b>' + esc(sub) + '</div>' +
+        '</div>';
+    }).join('') || '<div class="empty" style="margin:24px auto">멤버 정보를 불러오는 중…</div>';
+    // 상단 버튼: 최근 활동한 3명 + 전체 수
+    var top = list.slice(0, 3);
+    elMemberStack.innerHTML = top.map(function(m){
+      var av = m.avatar || avatarSrc(m.name);
+      return av ? '<img src="' + esc(av) + '" alt="" onerror="this.remove()">' : '<span>' + esc(m.emoji || '') + '</span>';
+    }).join('');
+    try {
+      elMemberClock.textContent = new Date().toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', hour12:false});
+    } catch(e){}
+  }
+  function loadMembers(){
+    state.membersAt = Date.now();
+    return api('/api/agents').then(function(d){
+      state.members = d.agents || [];
+      renderMembers();
+    }).catch(function(){});
+  }
+  function openMembers(){
+    elPanel.hidden = false;
+    elScrim.hidden = false;
+    requestAnimationFrame(function(){ elPanel.classList.add('open'); });
+    loadMembers();
+  }
+  function closeMembers(){
+    elPanel.classList.remove('open');
+    setTimeout(function(){ elPanel.hidden = true; elScrim.hidden = true; }, 200);
+  }
+  $('membersBtn').addEventListener('click', openMembers);
+  $('membersLink').addEventListener('click', function(e){ e.preventDefault(); document.body.classList.remove('nav-open'); openMembers(); });
+  $('memberClose').addEventListener('click', closeMembers);
+  elScrim.addEventListener('click', closeMembers);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !elPanel.hidden) closeMembers(); });
 
   /* ---------- gate ---------- */
   function openGate(msg){
@@ -489,9 +644,10 @@
       out += '<div class="daysep"><span>' + esc(day) + '</span></div>';
     }
     out += '<div class="msg" id="m' + m.id + '" data-id="' + m.id + '">' +
-      '<div class="avatar" style="color:' + esc(m.color || '#fff') + '">' + esc(m.emoji || String(m.sender).slice(0,1)) + '</div>' +
+      avatarHtml(m.sender, m.emoji, m.avatar, 'avatar') +
       '<div class="body">' +
         '<div class="meta"><span class="who" style="color:' + esc(m.color || '#fff') + '">' + esc(m.sender) + '</span>' +
+          (m.legacy_from ? '<span class="badge legacy">이전 ' + esc(m.legacy_from) + '</span>' : '') +
           '<span class="badge">' + esc(m.role || '참여자') + '</span>' +
           '<span class="time">' + esc(kstTime(m.created_at)) + '</span></div>';
     if (m.reply_to){
@@ -725,6 +881,7 @@
     renderSenders();
     loadRooms().catch(function(){ setStatus(false, '연결 끊김'); });
     loadMessages(true);
+    loadMembers();
     if (state.timer) clearInterval(state.timer);
     var tick = 0;
     state.timer = setInterval(function(){
@@ -732,6 +889,7 @@
       tick++;
       loadMessages(false);
       if (tick % 5 === 0) loadRooms().catch(function(){});
+      if (!elPanel.hidden && Date.now() - state.membersAt > 15000) loadMembers();
     }, POLL_MS);
     document.addEventListener('visibilitychange', function(){
       if (!document.hidden) loadMessages(false);

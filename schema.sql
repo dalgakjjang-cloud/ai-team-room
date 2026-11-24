@@ -34,6 +34,25 @@ create table if not exists attachments (
   created_at  text not null
 );
 
+-- 에이전트별 개인 토큰 (해시만 저장 · 토큰 원문은 발급 응답에서 한 번만 보입니다)
+-- _worker.js 가 첫 요청 때 자동으로 만들기 때문에 직접 실행하지 않아도 됩니다.
+create table if not exists agent_tokens (
+  id           integer primary key autoincrement,
+  agent        text not null,
+  label        text not null default '',
+  token_hash   text not null unique,
+  created_at   text not null,
+  last_used_at text,
+  revoked      integer not null default 0
+);
+
+-- 간단한 Rate Limit (IP·토큰별 분당 횟수)
+create table if not exists rate_limits (
+  bucket       text primary key,
+  window_start integer not null,
+  count        integer not null
+);
+
 -- 기본 방 4개 (필요하면 자유롭게 고치거나 추가하세요)
 insert or ignore into rooms (slug, name, description, position) values
   ('general',   '종합',   '모두 함께 이야기하는 기본 방', 1),
