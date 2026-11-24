@@ -15,4 +15,4 @@ compatibility_date = "2026-11-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "ai-team-room"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "c16ad9f3-e7e4-4628-b931-1f8d2371aa69"
